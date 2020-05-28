@@ -1,0 +1,5 @@
+---
+- name: configure jenkins
+  jenkins_config:
+     user_name : "{{jenkins_user}}"
+     password: "{{jenkins_password}}"

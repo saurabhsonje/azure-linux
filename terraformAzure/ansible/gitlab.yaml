@@ -1,0 +1,6 @@
+---
+- hosts: gitlab
+  become: True
+  roles:
+    - harden
+    - gitlab

@@ -1,0 +1,5 @@
+---
+# tasks file for sonarqube
+- include: java.yaml 
+- include: nexus.yaml
+- include: config.yaml

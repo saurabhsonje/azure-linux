@@ -1,0 +1,32 @@
+---
+- name: add mysql repo 
+  yum:
+    name: http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    state: present
+
+- name: Install Mysql Server 
+  yum:
+    name: mysql-server
+    state: latest
+- name: start mysql service 
+  systemd:
+    name: mysqld
+    state: started
+- name: run script 
+  script: mysql_setup.sh 
+- name: install unzip
+  yum:
+    name: unzip
+    state: latest
+#- name: install mysql-python module of ansible 
+#  yum: name=MySQL-python state=latest
+## Creating database 
+#- name: create new db as sonarqube_db
+#  mysql_db:
+#    name: sonarqube_db
+#    state: present 
+#- name: create mysql user 
+#  mysql_user:
+#    name: 'sonarqube_user'
+#    password: 'admin@123'
+#    priv: '*.*:ALL'

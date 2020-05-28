@@ -1,0 +1,12 @@
+{
+  "userId": "<nexus_user>",
+  "firstName": "<nexus_user>",
+  "lastName": " ",
+  "emailAddress": "email-id@domain.com",
+  "password": "<nexus_password>",
+  "status": "active",
+  "roles": [
+    "nx-admin"
+  ]
+}
+

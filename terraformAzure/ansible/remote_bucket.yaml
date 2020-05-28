@@ -1,0 +1,12 @@
+---
+- name: Creat a s3 bucket for storing a terraform state file 
+  hosts: localhost
+  gather_facts: False
+  vars:
+    bucket_name: <BUCKET_NAME>
+  tasks:
+  - name: check is s3 bucket present 
+    aws_s3:
+      bucket: '{{ bucket_name }}'
+      mode: create
+      region: 'ap-southeast-1'

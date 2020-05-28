@@ -1,0 +1,3 @@
+---
+# tasks file for owasp
+- include: setup.yaml 

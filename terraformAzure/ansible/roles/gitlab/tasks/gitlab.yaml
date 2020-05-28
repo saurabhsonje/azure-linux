@@ -1,0 +1,30 @@
+---
+- name: download gitlab repo 
+  get_url:
+    url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh
+    dest: /opt/script.rpm.sh
+    mode: '0755'
+- name: if script present
+  stat:
+    path: /opt/script.rpm.sh
+  register: is_script
+
+- name: install gitlab repo  
+  command: sh /opt/script.rpm.sh
+  when: is_script.stat.exists
+
+- name: install gitlab-ce
+  yum:
+    name: gitlab-ce
+    state: latest
+- name: run gitlab-config 
+  command: gitlab-ctl reconfigure
+
+- name: wait until port 80 getting up
+  wait_for:
+    host: 127.0.0.1
+    port: 80
+    delay: 10
+
+- name: run set user script
+  script: reset_password.sh 

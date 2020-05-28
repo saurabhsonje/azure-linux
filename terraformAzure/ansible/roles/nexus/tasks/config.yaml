@@ -1,0 +1,89 @@
+---
+- name:  Configure the open file limit of the nexus user.
+  blockinfile:
+    path:  /etc/security/limits.conf
+    block: |
+           nexus - nofile 65536
+- name: change the run user in nexus
+  replace:
+    path: /opt/nexus/bin/nexus.rc
+    regexp: '#run_as_user='
+    replace: 'run_as_user=nexus'
+
+- name: copy the nexus vmoption file 
+  copy:
+    src: nexus.conf
+    dest:  /opt/nexus/bin/nexus.vmoptions
+
+- name: create nexus service 
+  copy:
+    src: nexus.service 
+    dest:   /etc/systemd/system/nexus.service
+
+- name: start nexus service
+  systemd:
+    name: nexus
+    state: started
+    enabled: yes
+
+- name: sleep ansible for 30 second
+  pause:
+    seconds: 60
+
+- name: Wait until the file "admin.password" is in the directory /opt/nexus3/ before continuing
+  wait_for:
+    path: /opt/nexusdata/nexus3/admin.password
+  register: password_file
+  
+- name: copy data file 
+  copy:
+    src: user.json
+    dest:  /tmp/user.json
+
+- name: read password from /opt/nexusdata/nexus3/admin.password
+  command: "cat /opt/nexusdata/nexus3/admin.password"
+  register: old_password
+- name: read json data
+  command: "cat /tmp/user.json"
+  register: json_data
+
+- name: wait until port 8081 getting up 
+  wait_for:
+    host: 127.0.0.1
+    port: 8081
+    delay: 10
+- name: check if admin user is disabled 
+  script: admin_status.sh
+- name: read admin_status 
+  command: "cat /tmp/admin_status"
+  register: admin_status
+  
+- name: call api to create user_name 
+  uri:
+      url: http://localhost:8081/service/rest/beta/security/users
+      method: POST
+      body: "{{ json_data.stdout }}"
+      body_format: json
+      headers:
+        Content-Type: "application/json"
+      user: admin
+      password: "{{ old_password.stdout }}"
+      force_basic_auth: yes
+  when: admin_status.stdout != 'disabled'
+  ignore_errors: True
+
+
+- name: Disbale admin usr and set anonymous user false
+  command: java -jar /opt/nexus/lib/support/nexus-orient-console.jar  "connect plocal:/opt/nexusdata/nexus3/db/security/ admin admin; update user set status='disabled' where id='admin';  update anonymous set enabled='false' where user_id='anonymous' "
+
+- name: change owner of nexus
+  file:
+    path: /opt/nexusdata
+    owner: nexus
+    group: nexus
+    recurse: yes
+- name: restart nexus service
+  systemd:
+      name: nexus
+      state: restarted
+

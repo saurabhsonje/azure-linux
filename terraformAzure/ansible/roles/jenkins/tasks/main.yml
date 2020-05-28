@@ -1,0 +1,5 @@
+---
+# tasks file for jenkins
+- include: install_packages.yaml
+- include: service.yaml 
+- include: config.yaml

@@ -1,0 +1,4 @@
+---
+# vars file for sonarqube
+sonar_user: <SONAR_USER>
+sonar_password: <SONAR_PASSWORD>

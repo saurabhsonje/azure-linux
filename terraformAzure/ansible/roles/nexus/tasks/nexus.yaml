@@ -1,0 +1,65 @@
+---
+- name: add a nexus user 
+  user:
+    name: nexus
+    system: true
+    create_home: false
+
+- name: nexus file present 
+  stat:
+    path: /opt/nexus
+  register: nexus_opt_path
+
+- name: download nexus file and extract
+  unarchive:
+    src: https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+    dest: /opt/
+    remote_src: yes
+    list_files: yes
+  register: data
+  when: nexus_opt_path.stat.exists == False
+
+- name: check if nexus-*
+  stat:
+    path: /opt/nexus-3.20.1-01
+  register: nexus_path
+
+- name: check is nexus present 
+  stat:
+    path: /opt/nexus
+  register: nexus_ready
+
+- name: check is nexusdata present 
+  stat:
+    path: /opt/nexusdata
+  register: nexusdata_ready
+
+- name: check if sonatype
+  stat:
+    path: /opt/sonatype-work
+  register: sonatype
+
+- name: move nexus-3* to nexus
+  shell: mv /opt/nexus-3* /opt/nexus
+  when: nexus_ready.stat.exists == False
+
+- name: move sonatype-work to nexusdata
+  command: mv /opt/sonatype-work /opt/nexusdata
+  when: 
+      - sonatype.stat.exists
+      - nexusdata_ready.stat.exists == False
+        
+
+- name: change owner of nexus
+  file:
+    path: /opt/nexus
+    owner: nexus
+    group: nexus 
+    recurse: yes
+
+- name: change owner of nexus
+  file:
+    path: /opt/nexusdata
+    owner: nexus
+    group: nexus
+    recurse: yes

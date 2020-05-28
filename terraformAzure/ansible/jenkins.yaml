@@ -1,0 +1,7 @@
+---
+- hosts: jenkins 
+  become: True
+  roles: 
+    - harden
+    - jenkins
+    - owasp

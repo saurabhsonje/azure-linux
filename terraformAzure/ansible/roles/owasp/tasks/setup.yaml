@@ -1,0 +1,26 @@
+---
+- name: check owasp file
+  stat:
+    path: /opt/zaproxy
+  register: owasp_path
+
+- name: download owasp and set in opt 
+  unarchive:
+    src: https://github.com/zaproxy/zaproxy/releases/download/v2.9.0/ZAP_2.9.0_Linux.tar.gz
+    dest: /opt/
+    remote_src: yes
+    list_files: yes
+  register: data
+  when: owasp_path.stat.exists == False
+- name: check zap file 
+  stat:
+    path: "/opt/{{data.files[0]}}"
+  register: opt_zap
+
+- name: rename file
+  command: mv /opt/"{{data.files[0]}}" /opt/zaproxy
+  when: opt_zap.stat.exists == True
+
+
+
+

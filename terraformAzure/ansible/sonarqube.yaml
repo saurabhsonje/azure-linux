@@ -1,0 +1,6 @@
+---
+- hosts: sonar
+  become: True
+  roles:
+    - harden
+    - sonarqube

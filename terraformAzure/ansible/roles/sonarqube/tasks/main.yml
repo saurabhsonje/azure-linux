@@ -1,0 +1,6 @@
+---
+# tasks file for sonarqube
+- include: java.yaml 
+- include: mysql.yaml
+- include: sonar.yaml
+- include: config.yaml

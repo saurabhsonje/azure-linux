@@ -1,0 +1,9 @@
+---
+- name: run jenkins server
+  systemd:
+     name: jenkins
+     state: started
+     enabled: yes
+- name: sleep ansible for 30 second
+  pause:
+    seconds: 30

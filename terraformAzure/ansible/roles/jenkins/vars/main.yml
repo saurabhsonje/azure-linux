@@ -1,0 +1,5 @@
+---
+# vars file for jenkins
+jenkins_user: <JENKINS_USER>
+jenkins_password: <JENKINS_PASSWORD>
+

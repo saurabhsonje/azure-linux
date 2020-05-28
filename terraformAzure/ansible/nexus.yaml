@@ -1,0 +1,6 @@
+---
+- hosts: nexus
+  become: True
+  roles:
+    - harden
+    - nexus

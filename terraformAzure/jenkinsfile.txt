@@ -1,0 +1,92 @@
+pipeline{
+    agent any
+    parameters{
+     /*   string (name: 'azure_subscription_id', description: '')
+        string (name: 'azure_client_id', description: '')
+        password (name: 'azure_client_secret', description: '')
+		string (name: 'azure_tenant_id', description: '')
+		*/string (name: 'storage_account_name', description: 'storage account  name to store and retrive terraform state file')
+    /*    string (name:'jenkins_user', description: '')
+        password (name:'jenkins_password', description: '')
+        string (name: 'sonar_user', description: '')
+        password (name: 'sonar_password', description: '')
+        string (name: 'gitlab_user', description: '')
+        password (name: 'gitlab_password', description: '')
+        string (name: 'nexus_user', description: '')
+        password (name: 'nexus_password', description: '')
+	*/	}
+	environment {
+        AZURE_SUBSCRIPTION_ID = "cf97669a-b8a4-471e-b5b7-5f96bf875432"
+        AZURE_CLIENT_ID="cd00171f-e88e-49e2-9b87-8fdc6c71d776"
+		AZURE_CLIENT_SECRET="4ed3bcfe-0969-434d-9afc-8f59ac226938"
+        AZURE_Tenant_ID="c160a942-c869-429f-8a96-f8c8296d57db"
+	    dir = "$currentBuild.number"
+	    dirkey = "key"+"-"+"$currentBuild.number"
+    }
+stages{
+   stage('git pull'){
+             steps{
+		 git credentialsId: 'git', url: 'https://github.com/saurabhsonje/Release-orchestrator.git'
+                sh '''
+                echo $WORKSPACE
+                cp -r /Release-orchestrator/* $WORKSPACE/
+                '''
+            }
+			}
+
+    stage('persistent_stage'){
+            steps{
+                script{
+                 def tfHome = "/usr/bin/terraform"
+                 //env.PATH = "${tfHome}:${env.PATH}"
+                 def ansHome = "/usr/bin/ansible"
+                 //tool name:'ansible'
+                // env.PATH = "${ansHome}:${env.PATH}"
+                 sh 'rm -rf $WORKSPACE/echo_key'
+                }
+                sh '''
+                
+                terraform -version
+                
+                '''
+                /*dir('ansible'){
+                    sh '''
+                        sed -i "s/<BUCKET_NAME>/$storage_account_name/g" remote_bucket.yaml
+                        sed -i "s/<OBJECT_NAME>/$dir/g" remote_bucket.yaml
+                        echo "hello second" 
+			            ansible-playbook remote_bucket.yaml
+                         '''
+                        
+                }*/
+                
+            //    azureCLI commands: [[exportVariablesString: '', script: 'az login']], principalCredentialId: 'Azure_principal'
+                
+                sh '''
+                  
+                  cd $WORKSPACE/terraformAzure/VPC
+                 terraform init -backend-config backend-azurerm/storage.tf -reconfigure
+                 terraform apply -auto-approve
+                  '''
+                 
+            }
+        }
+         stage('jenkins'){
+            steps{
+                 sh '''
+                   cd $WORKSPACE/terraformAzure/Jenkins/
+                   terraform init -backend-config backend-azurerm/storage.tf -reconfigure 
+                   terraform apply -auto-approve
+                   '''
+                   }
+         }
+       stage('Nexus'){
+            steps{
+                 sh '''
+                   cd $WORKSPACE/terraformAzure/Jenkins/
+                   terraform init -backend-config backend-azurerm/storage.tf -reconfigure 
+                   terraform apply -auto-approve
+                   '''
+                   }
+         }
+}
+}

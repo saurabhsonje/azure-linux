@@ -1,0 +1,7 @@
+- name: unxip the file
+  unarchive:
+    src: CIS_Harden.zip
+    dest: /tmp/
+- name: run hardening script 
+  command: sh /tmp/CIS_Harden/harden.sh
+    

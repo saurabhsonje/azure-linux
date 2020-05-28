@@ -1,0 +1,46 @@
+---
+- name: epel-release repo
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+- name: install curl 
+  yum:
+    name: curl
+    state: latest
+- name: install policycoreutils
+  yum:
+    name: policycoreutils
+    state: latest
+- name: install openssh-server
+  yum:
+    name: openssh-server
+    state: latest
+- name: install openssh-clients
+  yum:
+    name: openssh-clients
+    state: latest
+- name: install  postfix
+  yum:
+    name: postfix
+    state: latest
+
+
+- name: check java exists 
+  #stat: path=/usr/lib/jvm/jre-1.8.0-openjdk
+  stat: path=/usr/lib/jvm/jre-11-openjdk
+  register: java_path
+
+- name: add java path in profile
+  #command: echo -e "export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk" >> /etc/profile
+  command: echo -e "export JAVA_HOME=/usr/lib/jvm/jre-11-openjdk" >> /etc/profile
+  when: java_path.stat.exists
+
+- name: check jre exists
+  stat: path=/usr/lib/jvm/jre
+  register: jre_path
+
+- name: add jre path in profile 
+  command: echo -e "export JAVA_HOME=/usr/lib/jvm/jre" >> /etc/profile
+  when: jre_path.stat.exists
+
+
