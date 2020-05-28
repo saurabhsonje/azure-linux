@@ -25,9 +25,7 @@ resource "azurerm_linux_virtual_machine" "JenkinsVm" {
     location              = data.terraform_remote_state.remote.outputs.rglocation
     resource_group_name   = data.terraform_remote_state.remote.outputs.rgname
     size                  = "Standard_DS1_v2"
-    admin_username      = "adminuser"
     network_interface_ids = [azurerm_network_interface.nic.id]
-   
     os_disk {
        name              = "myOsDisk"
         caching           = "ReadWrite"
@@ -44,18 +42,17 @@ resource "azurerm_linux_virtual_machine" "JenkinsVm" {
     computer_name  = "myvm"
     admin_username = "azureuser"
     admin_password = "test@1234"
+    disable_password_authentication = false
+        
+
 
     tags = {
         environment = "Terraform Demo"
     }
  
 }
-output "JenkinsIp"{
 
-	value = data.azurerm_public_ip.JenkinsIp.ip_address
-}
-
-/*resource "azurerm_network_interface" "nic" {
+resource "azurerm_network_interface" "nic" {
   name                = "azurerm-nic"
   location            = data.terraform_remote_state.remote.outputs.rglocation
   resource_group_name = data.terraform_remote_state.remote.outputs.rgname
@@ -83,6 +80,9 @@ resource "azurerm_public_ip" "publicip1" {
 data "azurerm_public_ip" "JenkinsIp" {
   name                = azurerm_public_ip.publicip1.name
   resource_group_name = azurerm_linux_virtual_machine.JenkinsVm.resource_group_name
-}*/
+}
 
+output "JenkinsIp"{
 
+	value = data.azurerm_public_ip.JenkinsIp.ip_address
+}
