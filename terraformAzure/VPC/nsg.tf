@@ -24,7 +24,7 @@ resource "azurerm_network_security_rule" "http" {
   direction                   = "Outbound"
   access                      = "Allow"
   protocol                    = "Tcp"
-  source_port_range           = "80"
+  source_port_range           = "8080"
   destination_port_range      = "*"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
