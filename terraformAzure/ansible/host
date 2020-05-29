@@ -1,11 +1,11 @@
 [jenkins]
-<JENKINS_IP> ansible_connection=ssh ansible_user=ec2-user 
+<JENKINS_IP> 
 
 [sonar]
-<SONAR_IP> ansible_connection=ssh ansible_user=ec2-user 
+<SONAR_IP>  
 
 [gitlab]
-<gitlab_ip> ansible_connection=ssh ansible_user=ec2-user
+<gitlab_ip> 
 
 [nexus]
-<nexus_ip> ansible_connection=ssh ansible_user=ec2-user
+<nexus_ip> 
