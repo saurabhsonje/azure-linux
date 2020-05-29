@@ -6,9 +6,9 @@ pipeline{
         password (name: 'azure_client_secret', description: '')
 		string (name: 'azure_tenant_id', description: '')
 		*/string (name: 'storage_account_name', description: 'storage account  name to store and retrive terraform state file')
-    /*    string (name:'jenkins_user', description: '')
-        password (name:'jenkins_password', description: '')
-        string (name: 'sonar_user', description: '')
+        string (name:'jenkins_user', description: '')
+         password (name:'jenkins_password', description: '')
+       /* string (name: 'sonar_user', description: '')
         password (name: 'sonar_password', description: '')
         string (name: 'gitlab_user', description: '')
         password (name: 'gitlab_password', description: '')
@@ -26,67 +26,105 @@ pipeline{
 stages{
    stage('git pull'){
              steps{
-		 git credentialsId: 'git', url: 'https://github.com/saurabhsonje/Release-orchestrator.git'
-                sh '''
+		        git credentialsId: 'git', url: 'https://github.com/saurabhsonje/azure-linux.git'
+              /*  sh '''
                 echo $WORKSPACE
                 cp -r /Release-orchestrator/* $WORKSPACE/
-                '''
+                ''' */
             }
 			}
 
     stage('persistent_stage'){
             steps{
                 script{
-                 def tfHome = "/usr/bin/terraform"
-                 //env.PATH = "${tfHome}:${env.PATH}"
-                 def ansHome = "/usr/bin/ansible"
-                 //tool name:'ansible'
-                // env.PATH = "${ansHome}:${env.PATH}"
-                 sh 'rm -rf $WORKSPACE/echo_key'
+                def tfHome = tool name:'Terraform'
+                env.PATH = "${tfHome}:${env.PATH}"
+                //def ansHome = tool name:'Ansible'
+              //  env.PATH = "${ansHome}:${env.PATH}
                 }
                 sh '''
                 
                 terraform -version
+				
+                az --version
+				
+				'''
+                //az login --service-principal -u $AZURE_CLIENT_ID --password "MyServicePrincipal1" --tenant "c160a942-c869-429f-8a96-
+               // azureCLI commands: [[exportVariablesString: '', script: 'az -version']], principalCredentialId: 'Azure_principal'                                                            
+                //az commands: [[exportVariablesString: '', script: 'az login']], principalCredentialId: 'azureserviceprincipalid'
                 
-                '''
-                /*dir('ansible'){
-                    sh '''
-                        sed -i "s/<BUCKET_NAME>/$storage_account_name/g" remote_bucket.yaml
-                        sed -i "s/<OBJECT_NAME>/$dir/g" remote_bucket.yaml
-                        echo "hello second" 
-			            ansible-playbook remote_bucket.yaml
-                         '''
-                        
-                }*/
-                
-            //    azureCLI commands: [[exportVariablesString: '', script: 'az login']], principalCredentialId: 'Azure_principal'
-                
-                sh '''
-                  
+                  sh '''
                   cd $WORKSPACE/terraformAzure/VPC
-                 terraform init -backend-config backend-azurerm/storage.tf -reconfigure
-                 terraform apply -auto-approve
-                  '''
-                 
+                  echo "hello"
+                  terraform init -backend-config backend-azurerm/storage.tf -reconfigure
+                  echo "one "
+                  terraform validate
+                  terraform apply -auto-approve 
+                  ''' 
             }
-        }
-         stage('jenkins'){
+    }
+stage('jenkins'){
             steps{
                  sh '''
                    cd $WORKSPACE/terraformAzure/Jenkins/
                    terraform init -backend-config backend-azurerm/storage.tf -reconfigure 
                    terraform apply -auto-approve
+                   
+                   terraform output public_ip > jenkins_public_ip
+                   '''
+				   
+script{              // sudo chmod -R a+rw /var/jenkins_home/workspace/Azure_ToolChainProvisioner
+                       env.jenkins_public_ip = readFile('terraform/jenkins/jenkins_public_ip').trim()
+                       echo "${jenkins_public_ip}"
+                 
+		    }
+		 sleep(time:60,unit:"SECONDS")
+                 dir('ansible')
+                 {
+                  sh 'sed -i "s/<JENKINS_IP>/"${jenkins_public_ip}"/g" hostazure'
+                  sh '''
+                        sed -i "s/<JENKINS_USER>/"${jenkins_user}"/g" roles/jenkins/vars/main.yml
+                        sed -i "s/<JENKINS_PASSWORD>/"${jenkins_password}"/g" roles/jenkins/vars/main.yml
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-playbook -i hostazure jenkins.yaml -u azureuser --extra-vars 'ansible_ssh_pass=test@1234'
+                  '''
+                 }
+                 echo "Jenkins_URL = http://${jenkins_public_ip}:8080"
+                }
+              }
+        
+stage('Nexus'){
+            steps{
+                 sh '''
+                   cd $WORKSPACE/terraformAzure/Nexus/
+                   terraform init -backend-config backend-azurerm/storage.tf -reconfigure 
+                   terraform plan
+                   terraform validate
+                   terraform apply -auto-approve
                    '''
                    }
          }
-       stage('Nexus'){
+stage('Sonarqube'){
             steps{
                  sh '''
-                   cd $WORKSPACE/terraformAzure/Jenkins/
+                   cd $WORKSPACE/terraformAzure/Sonarqube/
                    terraform init -backend-config backend-azurerm/storage.tf -reconfigure 
+                   terraform plan
+                   terraform validate
+                   terraform apply -auto-approve
+                   '''
+                   }
+         }
+ stage('Gitlab'){
+            steps{
+                 sh '''
+                   cd $WORKSPACE/terraformAzure/Sonarqube/
+                   terraform init -backend-config backend-azurerm/storage.tf -reconfigure 
+                   terraform plan
+                   terraform validate
                    terraform apply -auto-approve
                    '''
                    }
          }
 }
-}
+  }
