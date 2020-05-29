@@ -4,7 +4,7 @@ provider "azurerm" {
 }
 
 variable "prefixjen" {
-  default = "Nexus"
+  default = "Gitlab"
 }
 
 data "terraform_remote_state" "remote" {
@@ -75,12 +75,12 @@ resource "azurerm_public_ip" "publicip1" {
     }
 }
 
-data "azurerm_public_ip" "NexusIp" {
+data "azurerm_public_ip" "GitlabIp" {
   name                = azurerm_public_ip.publicip4.name
-  resource_group_name = azurerm_linux_virtual_machine.NexusVm.resource_group_name
+  resource_group_name = azurerm_linux_virtual_machine.GitlabVm.resource_group_name
 }
 
-output "NexusIp"{
+output "GitlabIp"{
 
-	value = data.azurerm_public_ip.NexusIp.ip_address
+	value = data.azurerm_public_ip.GitlabIp.ip_address
 }
