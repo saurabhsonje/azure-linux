@@ -9,7 +9,7 @@ terraform {
 }
 
 resource "azurerm_resource_group" "rg1" {
-    name     = "DAL2"
+    name     = "DAL1"
     location = "eastus"
 }
 
