@@ -4,7 +4,7 @@ provider "azurerm" {
 }
 
 variable "prefixjen" {
-  default = "Nexus"
+  default = "Sonarqube"
 }
 
 data "terraform_remote_state" "remote" {
@@ -20,7 +20,7 @@ data "terraform_remote_state" "remote" {
 
 
 # Create virtual machine
-resource "azurerm_linux_virtual_machine" "GitlabVm" {
+resource "azurerm_linux_virtual_machine" "SonarqubeVm" {
     name                  = "${var.prefixjen}-vm"
     location              = data.terraform_remote_state.remote.outputs.rglocation
     resource_group_name   = data.terraform_remote_state.remote.outputs.rgname
@@ -75,12 +75,12 @@ resource "azurerm_public_ip" "publicip1" {
     }
 }
 
-data "azurerm_public_ip" "NexusIp" {
+data "azurerm_public_ip" "SonarqubeIp" {
   name                = azurerm_public_ip.publicip4.name
-  resource_group_name = azurerm_linux_virtual_machine.NexusVm.resource_group_name
+  resource_group_name = azurerm_linux_virtual_machine.SonarqubeVm.resource_group_name
 }
 
-output "NexusIp"{
+output "SonarqubeIp"{
 
-	value = data.azurerm_public_ip.NexusIp.ip_address
+	value = data.azurerm_public_ip.SonarqubeIp.ip_address
 }
